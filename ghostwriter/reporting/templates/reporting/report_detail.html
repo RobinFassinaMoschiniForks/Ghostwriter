@@ -129,11 +129,11 @@
         <table class="table table-responsive-lg table-borderless table-config center">
           <tr>
             <td class="text-left icon tag-icon">Figure Label & Prefix</td>
-            <td class="text-justify">{{ report_config.label_figure }} {{ report_config.prefix_figure }}</td>
+            <td class="text-justify">{{ report_config.label_figure }}{{ report_config.prefix_figure }}</td>
           </tr>
           <tr>
             <td class="text-left icon tag-icon">Table Label & Prefix</td>
-            <td class="text-justify">{{ report_config.label_table }} {{ report_config.prefix_table }}</td>
+            <td class="text-justify">{{ report_config.label_table }}{{ report_config.prefix_table }}</td>
           </tr>
           <tr>
             <td class="text-left icon tag-icon">Title Case Captions</td>
@@ -537,6 +537,7 @@
             <thead>
             <tr>
               <th class="align-middle">Name</th>
+              <th class="align-middle">Filename</th>
               <th class="align-middle sorter-false">Options</th>
             </tr>
             </thead>
@@ -544,11 +545,14 @@
             {% for evidence_file in report.evidence_set.all %}
               <tr data-id="{{ evidence_file.id }}">
                 <td
-                  class="align-middle icon {% if evidence_file|get_file_type == "image" %}avatar-upload-icon{% else %}code-icon{% endif %}">
+                  class="pl-3 text-left align-middle icon {% if evidence_file|get_file_type == "image" %}avatar-upload-icon{% else %}code-icon{% endif %}">
                   <a href="{% url 'reporting:evidence_detail' evidence_file.id %}" class="clickable">
-                    {{ evidence_file.friendly_name|bleach }} ({{ evidence_file|get_file_basename|bleach }})
+                    {{ evidence_file.friendly_name|bleach }}
                   </a>
                 </td>
+              <td class="align-middle">
+                <em>{{ evidence_file.filename|truncate_filename:50 }}</em>
+              </td>
                 <td class="align-middle">
                   <div class="dropdown dropleft">
                     <button
@@ -563,6 +567,8 @@
                       class="dropdown-menu"
                       aria-labelledby="evidence-dropdown-btn_{{ evidence_file.id }}"
                     >
+                      <a href="{% url 'reporting:evidence_detail' evidence_file.id %}"
+                         class="dropdown-item icon view-icon">View</a>
                       <a href="{% url 'reporting:evidence_update' evidence_file.id %}"
                          class="dropdown-item icon edit-icon">Edit</a>
                       <a href="{% url 'reporting:evidence_delete' evidence_file.id %}"
@@ -597,6 +603,9 @@
               </div>
             {% endif %}
           {% endfor %}
+          {% if report_extra_fields_spec|has_non_rt_fields %}
+            <hr>
+          {% endif %}
           {% for field_spec in report_extra_fields_spec %}
             {% if field_spec.type == "rich_text" %}
               <div class="row justify-content-md-center mb-1">
@@ -607,6 +616,7 @@
                 <button type="button" class="btn btn-primary col-3 offset-2 icon view-icon" data-toggle="modal"
                         data-target="#field_spec_{{ field_spec.internal_name|bleach }}">Preview
                 </button>
+              {% if not forloop.last %}<hr>{% endif %}
               </div>
             {% endif %}
           {% endfor %}
@@ -653,32 +663,45 @@
     const $spinnerModal = $('#spinner-modal')
 
     {% comment %} Connect to channel for report-specific notifications {% endcomment %}
-    let ws_report = new WebSocket(
-      protocol + window.location.host +
-      '/ws/reports/' + {{ report.id }} + '/');
+    function webSocketInit() {
+      ws_report = new WebSocket(
+        protocol + window.location.host +
+        '/ws/reports/' + {{ report.id }} + '/');
 
-    {% comment %} Handle receiving report-specific messages {% endcomment %}
-    ws_report.onmessage = function (e) {
-      let data = JSON.parse(e.data);
-      if (data.message['status'] == 'success') {
-        console.log('Completed report generation');
+      {% comment %} Handle successful WebSocket connection {% endcomment %}
+      ws_report.onopen = function () {
+        console.log('Connected to report notification WebSocket');
+        $spinnerModal.modal('hide');
+      };
+
+      {% comment %} Handle receiving report-specific messages {% endcomment %}
+      ws_report.onmessage = function (e) {
+        let data = JSON.parse(e.data);
+        if (data.message['status'] === 'success') {
+          console.log('Completed report generation');
+          setTimeout(() => {
+            $spinnerModal.modal('hide');
+          }, 1000);
+        }
+      };
+
+      {% comment %} Handle unexpected WebSocket closures {% endcomment %}
+      ws_report.onclose = function () {
+        console.error('Report notification WebSocket closed unexpectedly');
         setTimeout(() => {
-          $spinnerModal.modal('hide');
-        }, 1000);
-      }
-    };
-
-    {% comment %} Handle unexpected WebSocket closures {% endcomment %}
-    ws_report.onclose = function () {
-      console.error('Report notification WebSocket closed unexpectedly');
-    };
+          webSocketInit();
+        }, 2000);
+      };
+    }
+    webSocketInit();
 
     {% comment %} Display the loading spinner while report generates {% endcomment %}
     $('.js-generate-report').click(function () {
       $spinnerModal.modal('show');
+      // Wait 30 seconds and hide the spinner – just in case there is an error that prevents it from closing via WebSockets
       setTimeout(() => {
         $spinnerModal.modal('hide');
-      }, 4000);
+      }, 20000);
     });
 
     let report_id = '{{ report.id }}';

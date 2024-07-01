@@ -34,12 +34,19 @@ ol:not(.list-unstyled):not(.nav):not(.breadcrumb) {
 }
 
 pre {
+  font-family: 'Roboto Mono', Courier, monospace;
+  text-align: justify;
   font-size: var(--main-font-size);
   font-weight: 300;
-  line-height: 1.7em;
+  line-height: 1.5em;
   color: var(--main-txt-color);
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin: auto;
+  max-width: 70vw;
+  word-wrap: break-word;
+  overflow-x: auto;
+  border: 1pt solid var(--secondary-color);
+  white-space: pre-wrap;
+  padding: 5px;
 }
 
 code {
@@ -68,22 +75,9 @@ hr {
   margin-top: 10px;
 }
 
-/* Images and code blocks will be 6.5" wide in a Word document, so width is 6.5" in these next two classes. */
-.text-evidence {
-  text-align: left;
-  max-width: 80%;
-  word-wrap: break-word;
-  line-height: 20px;
-  font-family: 'Roboto Mono';
-  font-weight: 300;
-  margin: auto;
-  overflow: auto;
-  border: 1pt solid var(--secondary-color);
-}
-
 .img-evidence {
   height: auto;
-  width: 6.5in;
+  width: 60vw;
   display: block;
   margin-left: auto;
   margin-right: auto;
@@ -116,7 +110,7 @@ hr {
 ----------------------------------------------------- */
 
 .custom-file-label::after {
-  min-width:20%;
+  min-width: 20%;
   content: 'Browse';
   width: 10%;
 }
@@ -197,21 +191,28 @@ hr {
 }
 
 .tooltip-inner {
-    color: #fff;
-    background: var(--primary-color);
+  color: #fff;
+  background: var(--primary-color);
 }
 
-.bs-tooltip-auto[x-placement^=bottom] .arrow::before, .bs-tooltip-bottom .arrow::before {
-    border-bottom-color: var(--primary-color);
+.bs-tooltip-auto[x-placement^=bottom] .arrow::before,
+.bs-tooltip-bottom .arrow::before {
+  border-bottom-color: var(--primary-color);
 }
-.bs-tooltip-auto[x-placement^=top] .arrow::before, .bs-tooltip-top .arrow::before {
-    border-top-color: var(--primary-color);
+
+.bs-tooltip-auto[x-placement^=top] .arrow::before,
+.bs-tooltip-top .arrow::before {
+  border-top-color: var(--primary-color);
 }
-.bs-tooltip-auto[x-placement^=left] .arrow::before, .bs-tooltip-left .arrow::before {
-    border-left-color: var(--primary-color);
+
+.bs-tooltip-auto[x-placement^=left] .arrow::before,
+.bs-tooltip-left .arrow::before {
+  border-left-color: var(--primary-color);
 }
-.bs-tooltip-auto[x-placement^=right] .arrow::before, .bs-tooltip-right .arrow::before {
-    border-right-color: var(--primary-color);
+
+.bs-tooltip-auto[x-placement^=right] .arrow::before,
+.bs-tooltip-right .arrow::before {
+  border-right-color: var(--primary-color);
 }
 
 /* ---------------------------------------------------
@@ -280,7 +281,9 @@ hr {
   font-size: var(--main-font-size);
 }
 
-.tox-toolbar__group:last-child { margin-left: auto!important; }
+.tox-toolbar__group:last-child {
+  margin-left: auto !important;
+}
 
 /* ---------------------------------------------------
     HEADER STYLES
@@ -467,8 +470,8 @@ h6 {
 }
 
 .invalid-feedback {
-    display: block;
-  }
+  display: block;
+}
 
 /* ---------------------------------------------------
     FILE UPLOAD STYLES
@@ -977,7 +980,9 @@ p.severity-box.info {
   transition-duration: 0.4s;
 }
 
-.btn:focus{ box-shadow: 0 0 0 0.1rem var(--primary-color) }
+.btn:focus {
+  box-shadow: 0 0 0 0.1rem var(--primary-color)
+}
 
 .button:hover {
   background-color: var(--button-hover-color);
@@ -1254,7 +1259,7 @@ table.scroll tr {
 
 table.scroll tbody {
   display: block;
-  height: 80.5vh;
+  max-height: 80.5vh;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -1335,11 +1340,13 @@ a.fc-event {
   background: var(--secondary-color);
 }
 
-a.fc-event:active {
+a.fc-event:active {}
 
-}
-
-a.fc-event:hover, a.fc-event:active, a.fc-event:hover, a.fc-event:focus, a.fc-event:focus:after {
+a.fc-event:hover,
+a.fc-event:active,
+a.fc-event:hover,
+a.fc-event:focus,
+a.fc-event:focus:after {
   font-size: .85em;
   background: var(--primary-color);
 }
@@ -1790,7 +1797,7 @@ th.icon {
 }
 
 .report-icon:before {
-  content:'\f570';
+  content: '\f570';
 }
 
 .tag-icon:before {
@@ -2600,14 +2607,6 @@ ol {
   text-align: left;
 }
 
-.finding-content pre {
-  text-align: justify;
-  font-family: 'Courier New', Courier, monospace;
-  padding-left: 10px;
-  white-space: pre-wrap;
-  border: 2px solid #dedede;
-}
-
 .finding-content code {
   font-size: var(--main-font-size);
   font-family: 'Courier New', Courier, monospace;
@@ -2712,6 +2711,16 @@ ol {
 .badge-pptx {
   color: #fff;
   background-color: var(--pptx-color);
+}
+
+.badge-healthy {
+  color: #fff;
+  background-color: var(--healthy-color);
+}
+
+.badge-unhealthy {
+  color: #fff;
+  background-color: var(--blocked-color);
 }
 
 /* ---------------------------------------------------
@@ -3477,7 +3486,7 @@ input:checked+.slider:before {
   padding-right: .2em;
 }
 
-.ui-menu-item > a.ui-corner-all {
+.ui-menu-item>a.ui-corner-all {
   display: block;
   padding: 3px 15px;
   clear: both;
@@ -3488,7 +3497,8 @@ input:checked+.slider:before {
   text-decoration: none;
 }
 
-.ui-state-hover, .ui-state-active {
+.ui-state-hover,
+.ui-state-active {
   color: #ffffff;
   text-decoration: none;
   background-color: var(--primary-color);

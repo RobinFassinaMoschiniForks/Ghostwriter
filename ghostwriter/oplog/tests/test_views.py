@@ -141,6 +141,7 @@ class OplogEntriesImportTests(TestCase):
         "operator_name",
         "oplog_id",
         "tags",
+        "extra_fields",
     ]
 
     def build_row(self, entry, tool=None, use_entry_identifier=True, entry_identifier=None, oplog_id=None):
@@ -211,6 +212,19 @@ class OplogEntriesImportTests(TestCase):
         response = self.client_auth.get(self.uri)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "oplog/oplog_import.html")
+
+    def test_view_uri_with_log_id(self):
+        response = self.client_auth.get(f"{self.uri}?log={self.oplog.id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("initial_log", response.context)
+        self.assertEqual(response.context["initial_log"], None)
+
+        response = self.client_mgr.get(f"{self.uri}?log={self.oplog.id}")
+        self.assertEqual(response.context["initial_log"], self.oplog)
+
+        response = self.client_mgr.get(f"{self.uri}?log=999")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["initial_log"], None)
 
     def test_import_updates_existing_entries_and_adds_new_entries(self):
         with open(self.filename, "w") as csvfile:
@@ -355,6 +369,25 @@ class OplogEntriesImportTests(TestCase):
             self.assertEqual(response.status_code, 302)
             self.assertRedirects(response, self.redirect_uri)
             self.assertEqual(self.OplogEntry.objects.filter(oplog_id=self.oplog).count(), starting_entries + 1)
+
+    def test_naive_timestamp(self):
+        """Test that a naive timestamp is made timezone-aware during import."""
+        entry = self.OplogEntry.objects.all().first()
+        entry.start_date = datetime.now()
+        entry.end_date = datetime.now()
+
+        with open(self.filename, "w") as csvfile:
+            writer = csv.DictWriter(
+                csvfile, fieldnames=self.fieldnames, quoting=csv.QUOTE_MINIMAL, escapechar="\\", delimiter=","
+            )
+            writer.writeheader()
+            writer.writerow(self.build_row(entry))
+
+        with open(self.filename, "r") as csvfile:
+            response = self.client_mgr.post(self.uri, {"csv_file": csvfile, "oplog_id": self.oplog.id})
+            self.assertEqual(response.status_code, 302)
+            self.assertRedirects(response, self.redirect_uri)
+            self.assertEqual(self.OplogEntry.objects.filter(oplog_id=self.oplog).count(), self.num_of_entries)
 
 
 class OplogCreateViewTests(TestCase):
